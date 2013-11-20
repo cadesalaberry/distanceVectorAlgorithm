@@ -35,7 +35,7 @@ public class PoisonedReverseNode extends Node {
 				}
 			}
 
-			// Send these messages to each neighbor.
+			// Sends these messages to each neighbor.
 			Message message = new Message(this, hashMap);
 			neighbor.sendMessage(message);
 		}

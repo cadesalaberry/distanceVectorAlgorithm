@@ -339,21 +339,18 @@ public class Node implements Comparable<Node> {
 		// Loops over all possible destinations.
 		for (Node destination : getDestinations()) {
 
-			Float minimumDistance = Float.POSITIVE_INFINITY;
-			Node nextHop = null;
-
 			// Loops over all neighbors.
 			// Do Bellman-Ford updates using this node's local info
-			// using bf equation d(x,N)+d(N,D) and add them to the lists to sort
-			// ehm after
-			// x:this node / N:neighbor / D:destinaiton
 			for (Node neighbor : getNeighbors()) {
 
 				// Reinitialises the node.
 				if (this.equals(destination)) {
+
 					nextNodes.add(this);
 					costs.add(0.0f);
+
 				} else {
+
 					Float cost = this.getCostToNeighbor(neighbor);
 
 					if ((this.messages.containsKey(destination)))
@@ -361,36 +358,45 @@ public class Node implements Comparable<Node> {
 								destination);
 					else
 						cost += neighbor.getCostToDestination(destination);
-					
+
 					nextNodes.add(neighbor);
 					costs.add(cost);
 				}
 			}
-			// Gets minimun distance and Hop
+
+			Float minimumDistance = Float.POSITIVE_INFINITY;
+			Node nextHop = null;
+
+			// Gets minimum distance and Hop.
 			for (int i = 0; i < costs.size() && i < nextNodes.size(); i++) {
+
 				if (costs.get(i) < minimumDistance) {
+
 					minimumDistance = costs.get(i);
 					nextHop = nextNodes.get(i);
 				}
 			}
-			
-			// Updates the distance if different from stored value
-			if (minimumDistance != this.getCostToDestination(destination)) {
-				try {
+
+			try {
+				// Updates the distance if different from stored value.
+				if (minimumDistance != this.getCostToDestination(destination)) {
+
 					this.updateDistanceVector(destination, minimumDistance);
 					this.updateForwardingTable(destination, nextHop);
 					somethingChanged = true;
-					
-				} catch (Exception e) {
-					System.out.println(e);
+
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+
 			nextNodes.clear();
 			costs.clear();
 		}
 
 		// If something changed, notifies this node's neighbors.
 		if (somethingChanged) {
+
 			this.notifyNeighbors();
 			somethingChanged = false;
 		}
