@@ -24,34 +24,37 @@ public class Node implements Comparable<Node> {
 
 	// Data structure mapping this nodes neighbors to the costs of getting to
 	// each neighbor.
-	private HashMap<Node,Float> costToNeighborMap;
-	
-	// Data structure to hold the most recently received message from each neighbor
-	private HashMap<Node,Message> messages;
+	private HashMap<Node, Float> costToNeighborMap;
+
+	// Data structure to hold the most recently received message from each
+	// neighbor
+	private HashMap<Node, Message> messages;
 	private boolean newMessages = false;
 	private Vector<Message> messageQueue;
-	
+
 	// Data structures representing this nodes local distance vector information
 	// HashMap distanceVector holds the cost to each destination from this node
-	// HashMap forwardingTable holds the next hop to each destination from this node
-	private HashMap<Node,Float> distanceVector;
-	private HashMap<Node,Node> forwardingTable;
+	// HashMap forwardingTable holds the next hop to each destination from this
+	// node
+	private HashMap<Node, Float> distanceVector;
+	private HashMap<Node, Node> forwardingTable;
 
 	/**
 	 * Constructor for Node
 	 * 
-	 * @param name is this node's name
+	 * @param name
+	 *            is this node's name
 	 */
 	public Node(String name) {
 		// Initialize this node's private fields
 		this.name = name;
-		costToNeighborMap = new HashMap<Node,Float>();
-		messages = new HashMap<Node,Message>();
+		costToNeighborMap = new HashMap<Node, Float>();
+		messages = new HashMap<Node, Message>();
 		newMessages = false;
 		messageQueue = new Vector<Message>();
-		distanceVector = new HashMap<Node,Float>();
+		distanceVector = new HashMap<Node, Float>();
 		distanceVector.put(this, new Float(0));
-		forwardingTable = new HashMap<Node,Node>();
+		forwardingTable = new HashMap<Node, Node>();
 		forwardingTable.put(this, this);
 	}
 
@@ -79,7 +82,9 @@ public class Node implements Comparable<Node> {
 		return name;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Node o) {
@@ -103,7 +108,7 @@ public class Node implements Comparable<Node> {
 					+ "\nCan't have duplicate links or negative costs";
 			throw new Exception(message);
 		}
-		
+
 		// Add an entry for the new neighbor in the local data structures
 		costToNeighborMap.put(neighbor, cost);
 		messages.put(neighbor, null);
@@ -111,23 +116,26 @@ public class Node implements Comparable<Node> {
 			distanceVector.put(neighbor, cost);
 			forwardingTable.put(neighbor, neighbor);
 		}
-		
+
 		// Send a message to all neighbors with this new cost info
 		notifyNeighbors();
 	}
-	
-	public void changeCostToNeighbor(Node neighbor, float cost) throws Exception {
+
+	public void changeCostToNeighbor(Node neighbor, float cost)
+			throws Exception {
 		if (!costToNeighborMap.containsKey(neighbor)) {
-			throw new Exception("Trying to change cost to a node that isn't already a neighbor");
+			throw new Exception(
+					"Trying to change cost to a node that isn't already a neighbor");
 		}
-		
+
 		// Change the cost to this neighbor
 		costToNeighborMap.put(neighbor, cost);
-	
-		// Update the local routing info (distance vector and forwarding table) with the new cost
+
+		// Update the local routing info (distance vector and forwarding table)
+		// with the new cost
 		doDistanceVectorUpdate();
 		clearNewMessagesFlag();
-		
+
 		// Notify neighbors of the change
 		notifyNeighbors();
 	}
@@ -142,9 +150,9 @@ public class Node implements Comparable<Node> {
 		messageQueue.add(m);
 		newMessages = true;
 	}
-	
+
 	public void deliverMessageQueue() {
-		for (int i=0; i<messageQueue.size(); i++) {
+		for (int i = 0; i < messageQueue.size(); i++) {
 			Message m = messageQueue.get(i);
 			messages.put(m.getFrom(), m);
 		}
@@ -161,14 +169,14 @@ public class Node implements Comparable<Node> {
 	public boolean hasNewMessages() {
 		return newMessages;
 	}
-	
+
 	/**
 	 * Set this node's newMessages flag to false
 	 */
 	public void clearNewMessagesFlag() {
 		newMessages = false;
 	}
-	
+
 	/**
 	 * @return a Collection of this node's neighbors
 	 */
@@ -200,7 +208,7 @@ public class Node implements Comparable<Node> {
 			return Float.POSITIVE_INFINITY;
 		}
 	}
-	
+
 	/**
 	 * Get the cost from a neighbor to a destination, as advertised in the
 	 * latest message received from that neighbor
@@ -246,33 +254,36 @@ public class Node implements Comparable<Node> {
 	protected float getCostToDestination(Node destination) {
 		return distanceVector.get(destination);
 	}
-	
-	private void updateDistanceVector(Node destination, float cost) throws Exception {
+
+	private void updateDistanceVector(Node destination, float cost)
+			throws Exception {
 		if (cost > 0) {
 			distanceVector.put(destination, cost);
 		} else {
 			throw new Exception("Costs can't be negative");
 		}
 	}
-	
-	private void updateForwardingTable(Node destination, Node nextHop) throws Exception {
+
+	private void updateForwardingTable(Node destination, Node nextHop)
+			throws Exception {
 		if ((!costToNeighborMap.containsKey(nextHop)) && (nextHop != this)) {
-			throw new Exception("Trying to add a forwarding table entry to a node that isn't a neighbor");
+			throw new Exception(
+					"Trying to add a forwarding table entry to a node that isn't a neighbor");
 		}
 		forwardingTable.put(destination, nextHop);
 	}
-	
+
 	public void printLatestMessages() {
 		System.out.println("Latest messages received by node " + this + ":");
 		System.out.println("      \t| Neighbors");
 		System.out.print("Dest. \t|");
-		Collection<Node> neighbors = getNeighbors(); 
+		Collection<Node> neighbors = getNeighbors();
 		for (Node n : neighbors) {
 			System.out.print("\t" + n);
 		}
 		System.out.print("\n");
 		System.out.print("---------------");
-		for (int i=0; i<neighbors.size(); i++) {
+		for (int i = 0; i < neighbors.size(); i++) {
 			System.out.print("--------");
 		}
 		System.out.print("\n");
@@ -280,11 +291,13 @@ public class Node implements Comparable<Node> {
 			System.out.print(dest + "\t|");
 			for (Node n : neighbors) {
 				String costFromNeighborTo = "";
-				if (getCostFromNeighborTo(n,dest) == Float.POSITIVE_INFINITY) {
+				if (getCostFromNeighborTo(n, dest) == Float.POSITIVE_INFINITY) {
 					costFromNeighborTo = "Inf";
 				} else {
-					//costFromNeighborTo = Float.toString(getCostFromNeighborTo(n,dest));
-					costFromNeighborTo = Integer.toString((int)getCostFromNeighborTo(n,dest));
+					// costFromNeighborTo =
+					// Float.toString(getCostFromNeighborTo(n,dest));
+					costFromNeighborTo = Integer
+							.toString((int) getCostFromNeighborTo(n, dest));
 				}
 				System.out.print("\t" + costFromNeighborTo);
 			}
@@ -292,7 +305,7 @@ public class Node implements Comparable<Node> {
 		}
 		System.out.println(" ");
 	}
-	
+
 	public void printDistanceVector() {
 		System.out.println("Distance vector and forwarding table for node "
 				+ this + ":");
@@ -303,34 +316,114 @@ public class Node implements Comparable<Node> {
 			if (getCostToDestination(dest) == Float.POSITIVE_INFINITY) {
 				costToDestination = "Inf";
 			} else {
-				costToDestination = Integer.toString((int)getCostToDestination(dest));
+				costToDestination = Integer
+						.toString((int) getCostToDestination(dest));
 			}
 			System.out.println(dest + "\t" + costToDestination + " ("
 					+ getNextHopTo(dest) + ")");
 		}
 		System.out.println("");
 	}
-	
+
 	/**
 	 * Implements the Bellman-Ford equation to update the distanceVector costs
 	 * and forwardingTable of this node
 	 */
 	public void doDistanceVectorUpdate() {
 		// STEP 1: Fill in this method
-	
-		// Loop over all possible destinations
-		// Do Bellman-Ford updates using this node's local info
-		// If something changed, notify this node's neighbors by calling notifyNeighbors()
+
+		ArrayList<Node> nextNodes = new ArrayList<Node>();
+		ArrayList<Float> costs = new ArrayList<Float>();
+		boolean somethingChanged = false;
+
+		// Loops over all possible destinations.
+		for (Node destination : getDestinations()) {
+
+			Float minimumDistance = Float.POSITIVE_INFINITY;
+			Node nextHop = null;
+
+			// Loops over all neighbors.
+			// Do Bellman-Ford updates using this node's local info
+			// using bf equation d(x,N)+d(N,D) and add them to the lists to sort
+			// ehm after
+			// x:this node / N:neighbor / D:destinaiton
+			for (Node neighbor : getNeighbors()) {
+
+				// Reinitialises the node.
+				if (this.equals(destination)) {
+					nextNodes.add(this);
+					costs.add(0.0f);
+				} else {
+					Float cost = this.getCostToNeighbor(neighbor);
+
+					if ((this.messages.containsKey(destination)))
+						cost += this.getCostFromNeighborTo(neighbor,
+								destination);
+					else
+						cost += neighbor.getCostToDestination(destination);
+					
+					nextNodes.add(neighbor);
+					costs.add(cost);
+				}
+			}
+			// Gets minimun distance and Hop
+			for (int i = 0; i < costs.size() && i < nextNodes.size(); i++) {
+				if (costs.get(i) < minimumDistance) {
+					minimumDistance = costs.get(i);
+					nextHop = nextNodes.get(i);
+				}
+			}
+			
+			// Updates the distance if different from stored value
+			if (minimumDistance != this.getCostToDestination(destination)) {
+				try {
+					this.updateDistanceVector(destination, minimumDistance);
+					this.updateForwardingTable(destination, nextHop);
+					somethingChanged = true;
+					
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+			}
+			nextNodes.clear();
+			costs.clear();
+		}
+
+		// If something changed, notifies this node's neighbors.
+		if (somethingChanged) {
+			this.notifyNeighbors();
+			somethingChanged = false;
+		}
 	}
-	
+
 	/**
-	 * Send distance vector messages to all neighbors of this node
+	 * Sends distance vector messages to all neighbors of this node
 	 */
 	protected void notifyNeighbors() {
 		// STEP 2: Fill in this method
-		
-		// Create a message containing the contents of this node's distance vector
+
+		HashMap<Node, Float> vector = new HashMap<Node, Float>();
+
+		// Gets the node's distance vector.
+		for (Node destination : getDestinations())
+			vector.put(destination, getCostToDestination(destination));
+
 		// (Not doing poisoned reverse in this implementation)
-		// Send the message to every neighbor
+
+		// Compiles the node's distance vector.
+		Message message = new Message(this, vector);
+
+		// Send the message to every neighbor.
+		for (Node neighbor : getNeighbors())
+			neighbor.sendMessage(message);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Comparable#equals(java.lang.Object)
+	 */
+	public boolean equals(Node o) {
+		return name.compareTo(o.toString()) == 0;
 	}
 }
