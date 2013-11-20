@@ -1,0 +1,10 @@
+# Example network in Figure 4.31a (p.387, Kurose & Ross) before a link cost changes
+X Y 4
+Y X 4
+
+X Z 50
+Z X 50
+
+Y Z 1
+Z Y 1
+
